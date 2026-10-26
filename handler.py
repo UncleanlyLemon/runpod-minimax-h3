@@ -33,6 +33,7 @@ import uuid
 from pathlib import Path
 
 import runpod
+from audio_inputs import attach_reference_audio
 
 COMFY_DIR = os.environ.get("COMFYUI_DIR", "/workspace/runpod-slim/ComfyUI")
 COMFY_URL = "http://127.0.0.1:8188"
@@ -104,6 +105,8 @@ def _boot_comfy():
 
 
 def _sync_workflows():
+    if os.environ.get("WORKFLOW_SYNC", "true").lower() == "false":
+        return
     try:
         req = urllib.request.Request(
             f"https://api.github.com/repos/{FH_REPO}/git/trees/{FH_BRANCH}?recursive=1",
@@ -307,6 +310,7 @@ def _director_timeline(job):
 
 
 def _patch(prompt, job):
+    attach_reference_audio(prompt, job, _upload, _media_bytes)
     director_nodes = [n for n in prompt.values()
                       if n.get("class_type") == "MiniMaxH3DirectorCS"]
     # Two Director flows: Native (the timeline owns the text — build it from the

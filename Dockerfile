@@ -63,6 +63,7 @@ ENV HF_TOKEN=""
 # Serverless entrypoint + handler + workflow templates (API format)
 # ──────────────────────────────────────────────────────────────────────────────
 COPY handler.py /opt/serverless/handler.py
+COPY audio_inputs.py /opt/serverless/audio_inputs.py
 COPY serverless-entrypoint.sh /opt/serverless/entrypoint.sh
 COPY populate-volume.sh /opt/serverless/populate-volume.sh
 COPY models-manifest.txt /opt/serverless/models-manifest.txt
