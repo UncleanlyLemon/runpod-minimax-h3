@@ -705,6 +705,10 @@ async def _queue_and_wait(prompt):
     client_id = uuid.uuid4().hex
     resp = json.loads(await asyncio.to_thread(
         _http, "/prompt", {"prompt": prompt, "client_id": client_id}, 60))
+    if resp.get("node_errors"):
+        raise RuntimeError("ComfyUI rejected workflow nodes: " + json.dumps(resp["node_errors"])[:6000])
+    if not resp.get("prompt_id"):
+        raise RuntimeError("ComfyUI did not accept the workflow: " + json.dumps(resp)[:6000])
     prompt_id = resp["prompt_id"]
     deadline = time.time() + JOB_TIMEOUT_S
     try:
@@ -868,6 +872,13 @@ async def handler(job):
     if not outputs:
         outputs = _collect_new_files(started, job, inline_used)
         print(f"[handler] fallback sweep — {len(outputs)} file(s) in output/", flush=True)
+    if not outputs:
+        diagnostic = {"status": history.get("status"), "output_nodes": list((history.get("outputs") or {}).keys())}
+        try:
+            diagnostic["comfy_log_tail"] = comfy_log.read_text(errors="replace")[-6000:]
+        except OSError:
+            pass
+        raise RuntimeError("No media was produced by ComfyUI: " + json.dumps(diagnostic)[:10000])
     print(f"[handler] done — {len(outputs)} output(s)", flush=True)
     return {"outputs": outputs, "texts": texts}
 
