@@ -79,3 +79,11 @@ ENV COMFYUI_DIR="/workspace/runpod-slim/ComfyUI" \
 # passed to it as args and the runpod handler would never start. Override the
 # entrypoint so the container runs the serverless handler directly.
 ENTRYPOINT ["/opt/serverless/entrypoint.sh"]
+
+# AI Studio saved-character protocol, pinned runtime and RefMod nodes.
+# No movie assets, recordings, model weights or credentials are included.
+COPY studio-refmods-runtime.tar.gz /tmp/studio-refmods-runtime.tar.gz
+RUN mkdir -p /opt/studio-refmods && \
+    tar -xzf /tmp/studio-refmods-runtime.tar.gz -C /opt/studio-refmods --strip-components=1 && \
+    rm /tmp/studio-refmods-runtime.tar.gz
+ENTRYPOINT ["/bin/bash", "/opt/studio-refmods/launch.sh"]
