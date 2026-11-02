@@ -80,7 +80,9 @@ ENV COMFYUI_DIR="/workspace/runpod-slim/ComfyUI" \
 # entrypoint so the container runs the serverless handler directly.
 ENTRYPOINT ["/opt/serverless/entrypoint.sh"]
 
-# AI Studio saved-character protocol, pinned runtime and RefMod nodes.
+# AI Studio saved-character and silent blocking-video protocol.
+RUN pip install --no-cache-dir "av>=14.2,<17"
+# Pinned runtime and RefMod nodes.
 # No movie assets, recordings, model weights or credentials are included.
 COPY studio-refmods-runtime.tar.gz /tmp/studio-refmods-runtime.tar.gz
 RUN mkdir -p /opt/studio-refmods && \
