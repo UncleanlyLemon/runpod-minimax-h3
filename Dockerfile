@@ -81,7 +81,14 @@ ENV COMFYUI_DIR="/workspace/runpod-slim/ComfyUI" \
 ENTRYPOINT ["/opt/serverless/entrypoint.sh"]
 
 # AI Studio saved-character and silent blocking-video protocol.
-RUN pip install --no-cache-dir "av>=14.2,<17"
+# ComfyUI's current audio path requires PyAV 17; avoid the old incompatible <17 pin.
+RUN pip install --no-cache-dir "av>=17,<18"
+
+# Verified Pika adapter; downloaded by the image builder, never uploaded with movie assets.
+RUN mkdir -p /opt/comfyui-baked/models/loras && \
+    curl --fail --location --retry 3 "https://huggingface.co/Comfy-Org/MiniMax-H3/resolve/912b6e38b2092ec4d2e86d24183e0d59ea059d48/loras/pika_h3_flex_ref2va_v1_bf16.safetensors" \
+      -o /opt/comfyui-baked/models/loras/pika_h3_flex_ref2va_v1_bf16.safetensors && \
+    echo "de3745ceb7d8d5c20898dd8fa3a05f1c0b00089ccd55297b2a8bab95c766b0e0  /opt/comfyui-baked/models/loras/pika_h3_flex_ref2va_v1_bf16.safetensors" | sha256sum -c -
 # Pinned runtime and RefMod nodes.
 # No movie assets, recordings, model weights or credentials are included.
 COPY studio-refmods-runtime.tar.gz /tmp/studio-refmods-runtime.tar.gz
